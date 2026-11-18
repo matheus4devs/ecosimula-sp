@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EcoSimula SP - Calculadora de Viabilidade Solar e Descarbonização</title>
+<meta name="description" content="Simule a economia, o payback e o CO2 evitado com energia solar no seu pequeno negócio em São Paulo. Cálculo 100% no navegador.">
+<style>
+:root{--bg:#F8FAFC;--card:#FFFFFF;--line:#E2E8F0;--ink:#0F172A;--mute:#475569;--green:#15803D;--green-bg:#F0FDF4;--amber:#D97706;--amber-bg:#FFFBEB}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px}
+header.top{background:var(--card);border-bottom:1px solid var(--line)}
+header.top .wrap{padding:28px 16px 24px}
+.brand{font-weight:700;font-size:15px;color:var(--green);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+.brand i{width:12px;height:12px;border-radius:50%;background:var(--amber);display:inline-block}
+h1{font-size:1.65rem;line-height:1.2;margin:0 0 10px;letter-spacing:-.01em}
+.lead{margin:0;color:var(--mute);max-width:62ch}
+main{padding:20px 0 8px}
+section{margin:0 0 20px}
+h2{font-size:1.2rem;margin:0 0 12px;letter-spacing:-.005em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px}
+label,.lbl{display:block;font-weight:600;font-size:.92rem;margin:0 0 6px}
+.hint{font-weight:400;color:var(--mute);font-size:.85rem}
+input[type=text],input[type=number],select{width:100%;font:inherit;color:var(--ink);background:#fff;border:1px solid #CBD5E1;border-radius:6px;padding:12px;min-height:46px}
+input:focus,select:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.field{margin-bottom:16px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid #CBD5E1;border-radius:6px;overflow:hidden}
+.seg label{margin:0;font-weight:600;text-align:center;cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;padding:12px 8px;min-height:46px;background:#fff;color:var(--mute)}
+.seg input:checked+span{background:var(--green);color:#fff}
+.seg input:focus-visible+span{outline:2px solid var(--ink);outline-offset:-4px}
+.btn{font:inherit;font-weight:600;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:6px;padding:13px 18px;min-height:48px;cursor:pointer;width:100%}
+.btn:hover{background:#166534}
+.btn.alt{background:#fff;color:var(--green)}
+.btn.alt:hover{background:var(--green-bg)}
+.err{color:#B91C1C;font-size:.9rem;margin:-8px 0 14px;min-height:0}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px}
+.kpi.sun{border-left:4px solid var(--amber)}
+.kpi.eco{border-left:4px solid var(--green)}
+.kpi small{display:block;color:var(--mute);font-size:.82rem;line-height:1.3;margin-bottom:6px}
+.kpi b{display:block;font-size:1.3rem;line-height:1.2;letter-spacing:-.01em}
+.kpi.main{grid-column:1/-1}
+.kpi.main b{font-size:1.65rem}
+.kpi em{display:block;font-style:normal;color:var(--mute);font-size:.8rem;margin-top:4px}
+.chartbox{position:relative;height:260px}
+.warn{background:var(--amber-bg);border:1px solid #FDE68A;color:#78350F;border-radius:8px;padding:12px 14px;font-size:.9rem;margin-top:12px}
+.detail{display:grid;grid-template-columns:1fr;gap:0;margin:0;font-size:.92rem}
+.detail div{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.detail div:last-child{border-bottom:0}
+.detail dt{color:var(--mute)}.detail dd{margin:0;font-weight:600;text-align:right}
+/* selo */
+.seal-stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+.seal{width:100%;max-width:340px;aspect-ratio:4/5;background:#fff;border:2px solid var(--green);border-radius:6px;padding:8px;display:flex}
+.seal-in{flex:1;border:1px solid #86EFAC;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;padding:22px 20px 16px}
+.seal .tag{font-size:.8rem;font-weight:700;color:var(--amber);letter-spacing:.02em}
+.seal h3{margin:6px 0 0;font-size:1.28rem;line-height:1.2;color:var(--green)}
+.seal .nm{font-size:1.05rem;font-weight:700;margin:0;overflow-wrap:anywhere}
+.seal p{margin:0;font-size:.86rem;color:var(--ink);line-height:1.5}
+.seal .big{font-size:2.1rem;font-weight:800;color:var(--green);line-height:1;margin:4px 0 0}
+.seal .big small{font-size:.9rem;font-weight:600;color:var(--mute)}
+.ods{display:flex;gap:6px;justify-content:center}
+.ods span{font-size:.72rem;font-weight:700;color:#fff;border-radius:3px;padding:3px 8px}
+.ods .o12{background:#B45309}.ods .o13{background:#15803D}
+.seal .ft{font-size:.7rem;color:var(--mute);border-top:1px solid var(--line);padding-top:8px;width:100%}
+.print-mode .seal-wrap{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.print-mode .seal-wrap>*:not(.seal-stage){display:none}
+.print-mode .seal-stage{width:100%}
+.print-mode .seal{max-width:min(380px,calc((100vh - 110px)*.8))}
+.print-mode #btnPrint{display:none}
+#btnExit{display:none;width:auto;min-height:40px;padding:8px 16px}
+.print-mode #btnExit{display:block}
+details{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:8px}
+summary{cursor:pointer;font-weight:600;padding:14px 16px;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--green);font-size:1.4rem;line-height:1;font-weight:400}
+details[open] summary::after{content:"\2212"}
+details[open] summary{border-bottom:1px solid var(--line)}
+details div{padding:12px 16px 14px;color:var(--mute);font-size:.95rem}
+details div p{margin:0 0 8px}details div p:last-child{margin:0}
+footer{background:var(--card);border-top:1px solid var(--line);margin-top:28px}
+footer .wrap{padding:22px 16px 30px;color:var(--mute);font-size:.84rem}
+footer p{margin:0 0 8px}footer strong{color:var(--ink)}
+[hidden]{display:none!important}
+@media (min-width:720px){
+h1{font-size:2.15rem}
+.kpis{grid-template-columns:repeat(6,1fr)}
+.kpi{grid-column:span 2}
+.kpi.main{grid-column:span 2}
+.kpi.main b{font-size:1.3rem}
+.kpi.tec{grid-column:span 3}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.btn{width:auto;min-width:220px}
+.chartbox{height:300px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <p class="brand"><i aria-hidden="true"></i>EcoSimula SP</p>
+    <h1>Descubra quanto a energia solar pode poupar no seu negócio</h1>
+    <p class="lead">Calculadora gratuita de viabilidade solar e descarbonização para pequenos comércios, MEIs e microempresas da cidade de São Paulo. Em segundos, você recebe uma estimativa técnica, calculada a partir da sua conta de luz e do tipo e orientação do telhado, que levaria cerca de 20 minutos para ser feita manualmente.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section aria-labelledby="t-form">
+    <h2 id="t-form">Dados do seu estabelecimento</h2>
+    <form id="form" class="card" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label for="nome">Nome do estabelecimento <span class="hint">(opcional)</span></label>
+          <input type="text" id="nome" maxlength="50" placeholder="Ex.: Ateliê Costura &amp; Arte" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="orient">Orientação do telhado</label>
+          <select id="orient">
+            <option value="0">Norte (perda de 0%)</option>
+            <option value="0.12">Leste ou Oeste (perda de 12%)</option>
+            <option value="0.28">Sul (perda de 28%)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <span class="lbl">Como você prefere informar o consumo?</span>
+        <div class="seg" role="radiogroup" aria-label="Tipo de consumo">
+          <label><input type="radio" name="modo" value="brl" checked><span>Conta de luz (R$)</span></label>
+          <label><input type="radio" name="modo" value="kwh"><span>Consumo (kWh)</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="valor" id="valorLbl">Valor médio da conta de luz mensal (R$)</label>
+        <input type="number" id="valor" inputmode="decimal" min="0" step="any" placeholder="Ex.: 800">
+      </div>
+      <div class="err" id="err" role="alert"></div>
+      <button class="btn" type="submit">Calcular viabilidade</button>
+    </form>
+  </section>
+
+  <div id="out" hidden>
+    <section aria-labelledby="t-res" id="resultados">
+      <h2 id="t-res">Resultado da simulação</h2>
+      <div class="kpis">
+        <div class="kpi sun main"><small>Investimento estimado (equipamentos e instalação)</small><b id="kInv">-</b><em id="kInvK"></em></div>
+        <div class="kpi sun"><small>Economia anual estimada</small><b id="kEco">-</b><em id="kEcoM"></em></div>
+        <div class="kpi sun"><small>Retorno do investimento (payback)</small><b id="kPay">-</b><em>tempo para o sistema se pagar</em></div>
+        <div class="kpi sun tec"><small>Potência do sistema</small><b id="kKwp">-</b><em id="kGen"></em></div>
+        <div class="kpi eco tec"><small>CO2 evitado por ano</small><b id="kCo2">-</b><em id="kArv"></em></div>
+      </div>
+      <div class="warn" id="aviso" hidden></div>
+    </section>
+
+    <section aria-labelledby="t-graf">
+      <h2 id="t-graf">Consumo atual vs. geração solar</h2>
+      <div class="card">
+        <div class="chartbox"><canvas id="chart" role="img" aria-label="Gráfico de barras comparando consumo atual e geração solar estimada em kWh por mês"></canvas></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-det">
+      <h2 id="t-det">Como chegamos nesses números</h2>
+      <div class="card">
+        <dl class="detail" id="detail"></dl>
+      </div>
+    </section>
+
+    <section aria-labelledby="t-selo" class="seal-wrap" id="sealWrap">
+      <h2 id="t-selo">Divulgue seu Impacto na Comunidade</h2>
+      <p style="margin:-4px 0 14px;color:var(--mute);font-size:.95rem">Use o selo abaixo nos Stories do Instagram ou no status do WhatsApp da sua loja. Toque em "Modo Print Limpo" e tire um print da tela.</p>
+      <div class="seal-stage">
+        <div class="seal" id="seal">
+          <div class="seal-in">
+            <div>
+              <div class="tag">Certificado ambiental</div>
+              <h3>Estabelecimento Comprometido com o Futuro</h3>
+            </div>
+            <div>
+              <p class="nm" id="sNome"></p>
+              <p class="big" id="sCo2"></p>
+              <p><small style="color:var(--mute)">de CO2 evitados por ano</small></p>
+            </div>
+            <p id="sMsg"></p>
+            <div class="ods" aria-label="Objetivos de Desenvolvimento Sustentável 12 e 13"><span class="o12">ODS 12</span><span class="o13">ODS 13</span></div>
+            <div class="ft">EcoSimula SP, Projeto de Extensão Universitária</div>
+          </div>
+        </div>
+        <button class="btn alt" id="btnPrint" type="button">Modo Print Limpo</button>
+        <button class="btn alt" id="btnExit" type="button">Sair do modo print</button>
+      </div>
+    </section>
+  </div>
+
+  <section aria-labelledby="t-faq">
+    <h2 id="t-faq">Perguntas frequentes</h2>
+    <details>
+      <summary>Durante o dia o sol gera energia, mas como a empresa funciona à noite?</summary>
+      <div>
+        <p>A maioria dos pequenos negócios usa o sistema on-grid, ligado à rede da distribuidora. De dia, os painéis geram energia: o que o comércio consome na hora é usado direto, e o que sobra é injetado na rede e vira créditos de energia.</p>
+        <p>À noite, a loja continua funcionando normalmente com a energia da rede, e os créditos acumulados de dia abatem a sua fatura. Esse é o sistema de compensação da ANEEL, previsto na Lei 14.300/2022. Você ainda paga o custo de disponibilidade (50 kWh, no cálculo desta ferramenta) e, conforme a regra de transição da lei, uma parcela de encargos sobre a energia injetada.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Em dias nublados ou de chuva as placas ainda geram energia?</summary>
+      <div>
+        <p>Sim. Mesmo com nuvens, os painéis seguem gerando pela radiação difusa, que é a luz espalhada pela atmosfera. A geração é menor do que em dia de céu aberto, mas não zera.</p>
+        <p>Como o cálculo usa a média anual de sol da região, os dias fortes compensam os dias fechados. Os créditos acumulados na rede também cobrem os dias de pouca geração.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Em quanto tempo o investimento se paga e como financiar sem capital próprio?</summary>
+      <div>
+        <p>Para pequenos negócios, o payback médio gira entre 2 anos e 8 meses e 3 anos, dependendo principalmente da orientação do telhado. Telhados voltados para Leste, Oeste ou Sul geram menos e tendem a demorar mais para se pagar.</p>
+        <p>É possível financiar sem capital próprio. Existem linhas de crédito de bancos e cooperativas de crédito voltadas à energia solar e à eficiência energética, e linhas do BNDES repassadas por bancos credenciados. O Sebrae também orienta MEIs e microempresas sobre crédito. Em geral, a parcela mensal costuma empatar com a economia na conta de luz.</p>
+        <p>Taxas, prazos e exigências mudam com frequência: compare propostas antes de decidir.</p>
+      </div>
+    </details>
+    <details>
+      <summary>A ferramenta coleta ou salva meus dados?</summary>
+      <div>
+        <p>Não. Todo o cálculo roda no seu navegador, de forma anônima. O nome do estabelecimento e os valores digitados não são enviados, salvos ou compartilhados com nenhum servidor, em linha com a LGPD (Lei 13.709/2018). Ao fechar ou recarregar a página, os dados desaparecem.</p>
+      </div>
+    </details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Nota técnica.</strong> Modelagem com irradiação de 4,5 HSP (horas de sol pleno) na Zona Sul de São Paulo, segundo o CRESESB/CEPEL; Performance Ratio de 0,78; tarifa comercial média de R$ 0,92/kWh; custo de disponibilidade de 50 kWh descontado do consumo; investimento médio de R$ 3.300 por kWp instalado, incluindo equipamentos e instalação, com base no Estudo Estratégico de Geração Distribuída da Greener e no índice de preços do Portal Solar para pequenos sistemas comerciais no Sudeste; perdas por orientação de 0%, 12% e 28%.</p>
+    <p>Fator de emissão do Sistema Interligado Nacional de 0,0617 kg CO2/kWh (MCTI) e equivalência de 1 árvore para cada 150 kg de CO2 por ano. Regras de compensação conforme a Lei 14.300/2022 (ANEEL). Orientações de crédito e gestão com base em materiais do Sebrae.</p>
+    <p>Os resultados são estimativas educativas e não substituem um projeto técnico e um orçamento de empresa habilitada. Desenvolvido como Projeto de Extensão Universitária.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function(){
+  var TARIFA=0.92, DISP=50, HSP=4.5, PR=0.78, CUSTO_KWP=3300, FE=0.0617, ARV=150, DIAS=30;
+  var $=function(id){return document.getElementById(id)};
+  var nf=function(v,d){return v.toLocaleString("pt-BR",{minimumFractionDigits:d||0,maximumFractionDigits:d||0})};
+  var brl=function(v){return v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",maximumFractionDigits:0})};
+  var chart=null;
+
+  function modo(){return document.querySelector('input[name="modo"]:checked').value}
+
+  document.querySelectorAll('input[name="modo"]').forEach(function(r){
+    r.addEventListener("change",function(){
+      var kwh=modo()==="kwh";
+      $("valorLbl").textContent=kwh?"Consumo médio mensal (kWh)":"Valor médio da conta de luz mensal (R$)";
+      $("valor").placeholder=kwh?"Ex.: 900":"Ex.: 800";
+      $("valor").value="";
+      $("err").textContent="";
+    });
+  });
+
+  $("form").addEventListener("submit",function(e){
+    e.preventDefault();
+    var v=parseFloat($("valor").value);
+    if(!isFinite(v)||v<=0){
+      $("err").textContent="Informe um valor maior que zero para calcular.";
+      $("valor").focus();return;
+    }
+    $("err").textContent="";
+    calcular(v);
+  });
+
+  function calcular(v){
+    var consumo=modo()==="kwh"?v:v/TARIFA;
+    var perda=parseFloat($("orient").value);
+    var alvo=Math.max(0,consumo-DISP);
+    var fator=HSP*DIAS*PR*(1-perda);
+    var kwp=alvo/fator;
+    var geraMes=kwp*fator;
+    var geraAno=geraMes*12;
+    var ecoMes=geraMes*TARIFA;
+    var ecoAno=ecoMes*12;
+    var custo=kwp*CUSTO_KWP;
+    var co2=geraAno*FE;
+    var arv=co2/ARV;
+    var nome=$("nome").value.trim();
+    var aviso=$("aviso");
+
+    $("out").hidden=false;
+
+    if(alvo<=0){
+      aviso.hidden=false;
+      aviso.textContent="Seu consumo está no nível do custo de disponibilidade (50 kWh), que é cobrado mesmo com energia solar. Neste caso, o sistema não traz economia relevante.";
+    }else{aviso.hidden=true;aviso.textContent=""}
+
+    $("kEco").textContent=brl(ecoAno);
+    $("kEcoM").textContent="cerca de "+brl(ecoMes)+" por mês";
+    if(ecoAno>0){
+      var meses=Math.round(custo/ecoAno*12), a=Math.floor(meses/12), m=meses%12;
+      var t=[];
+      if(a>0)t.push(a+(a===1?" ano":" anos"));
+      if(m>0||a===0)t.push(m+(m===1?" mês":" meses"));
+      $("kPay").textContent=t.join(" e ");
+    }else{$("kPay").textContent="-"}
+    $("kInv").textContent=brl(custo);
+    $("kInvK").textContent="base de R$ 3.300 por kWp instalado";
+    $("kKwp").textContent=nf(kwp,2)+" kWp";
+    $("kGen").textContent=nf(geraMes,0)+" kWh gerados por mês";
+    $("kCo2").textContent=nf(co2,0)+" kg";
+    $("kArv").textContent="equivale a ~"+nf(arv,1)+" árvores plantadas";
+
+    var d=[
+      ["Consumo mensal considerado",nf(consumo,0)+" kWh"],
+      ["Energia a compensar (consumo menos 50 kWh)",nf(alvo,0)+" kWh/mês"],
+      ["Perda por orientação do telhado",nf(perda*100,0)+"%"],
+      ["Geração estimada por mês",nf(geraMes,0)+" kWh"],
+      ["Geração estimada por ano",nf(geraAno,0)+" kWh"],
+      ["Economia estimada por mês",brl(ecoMes)],
+      ["Investimento estimado (R$ 3.300 por kWp)",brl(custo)]
+    ];
+    $("detail").innerHTML="";
+    d.forEach(function(r){
+      var row=document.createElement("div"),a1=document.createElement("dt"),b1=document.createElement("dd");
+      a1.textContent=r[0];b1.textContent=r[1];row.appendChild(a1);row.appendChild(b1);$("detail").appendChild(row);
+    });
+
+    desenhar(consumo,geraMes);
+
+    var n=nome||"seu comércio";
+    $("sNome").textContent=nome||"Seu negócio";
+    $("sCo2").innerHTML="";
+    $("sCo2").appendChild(document.createTextNode(nf(co2,0)+" "));
+    var sm=document.createElement("small");sm.textContent="kg";$("sCo2").appendChild(sm);
+    $("sMsg").textContent="Com a transição para energia solar, "+(nome?"o "+nome:"o seu comércio")+" deixará de emitir "+nf(co2,0)+" kg de CO2 por ano na atmosfera da nossa comunidade. Alinhado aos ODS 12 e 13 da ONU.";
+
+    $("resultados").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function desenhar(consumo,gera){
+    if(typeof Chart==="undefined"){return}
+    if(chart){chart.destroy()}
+    var cor=getComputedStyle(document.documentElement);
+    chart=new Chart($("chart"),{
+      type:"bar",
+      data:{
+        labels:["Consumo atual","Geração solar estimada"],
+        datasets:[{data:[Math.round(consumo),Math.round(gera)],backgroundColor:["#94A3B8","#15803D"],borderRadius:3,maxBarThickness:90}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,animation:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return nf(c.parsed.y,0)+" kWh/mês"}}}},
+        scales:{
+          y:{beginAtZero:true,title:{display:true,text:"kWh por mês",color:"#475569"},grid:{color:"#E2E8F0"},ticks:{color:"#475569"}},
+          x:{grid:{display:false},ticks:{color:"#0F172A",font:{weight:"600"}}}
+        }
+      }
+    });
+  }
+
+  $("btnPrint").addEventListener("click",function(){
+    document.body.classList.add("print-mode");window.scrollTo(0,0);
+  });
+  $("btnExit").addEventListener("click",function(){
+    document.body.classList.remove("print-mode");
+    $("sealWrap").scrollIntoView({block:"start"});
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&document.body.classList.contains("print-mode"))$("btnExit").click();
+  });
+})();
+</script>
+</body>
+</html>
